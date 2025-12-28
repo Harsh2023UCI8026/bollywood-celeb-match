@@ -1,8 +1,7 @@
 streamlit
-deepface
-opencv-python
+opencv-python-headless
 numpy
-scikit-learn
 pillow
-tensorflow==2.10.1
+deepface
+tensorflow==2.12.0
 mtcnn
