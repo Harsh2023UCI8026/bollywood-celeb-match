@@ -1,0 +1,8 @@
+streamlit
+deepface
+opencv-python
+numpy
+scikit-learn
+pillow
+tensorflow==2.10.1
+mtcnn
