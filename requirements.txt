@@ -1,11 +1,12 @@
 streamlit
 tensorflow==2.12.0
 tf-keras
-opencv-python-headless
 deepface
+opencv-python-headless
 numpy
 scikit-learn
 pillow
+
 
 
 
