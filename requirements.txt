@@ -1,10 +1,10 @@
-streamlit==1.32.2
-deepface==0.0.79
-tensorflow==2.12.0
+streamlit
+deepface
 opencv-python-headless
 numpy
-pillow
-scikit-learn
+Pillow
+tensorflow==2.12.0
+
 
 
 
