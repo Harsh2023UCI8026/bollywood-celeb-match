@@ -1,11 +1,11 @@
-streamlit
+streamlit==1.32.2
+deepface==0.0.79
 tensorflow==2.12.0
-tf-keras
-deepface
 opencv-python-headless
 numpy
-scikit-learn
 pillow
+scikit-learn
+
 
 
 
