@@ -6,3 +6,5 @@ deepface
 tensorflow==2.12.0
 mtcnn
 scikit-learn
+joblib
+

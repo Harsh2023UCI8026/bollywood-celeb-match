@@ -3,39 +3,43 @@ import numpy as np
 from deepface import DeepFace
 from joblib import dump
 
-DATASET_PATH = "data"
+DATASET_PATH = "data"   # folder containing face images
 
-embeddings = []
-names = []
+def extract_embeddings():
+    embeddings = []
+    names = []
 
-print("🔄 Extracting face embeddings...")
+    for person in os.listdir(DATASET_PATH):
+        person_path = os.path.join(DATASET_PATH, person)
 
-for person in os.listdir(DATASET_PATH):
-    person_path = os.path.join(DATASET_PATH, person)
+        if not os.path.isdir(person_path):
+            continue
 
-    if not os.path.isdir(person_path):
-        continue
+        for img in os.listdir(person_path):
+            img_path = os.path.join(person_path, img)
 
-    for img in os.listdir(person_path):
-        img_path = os.path.join(person_path, img)
+            try:
+                result = DeepFace.represent(
+                    img_path=img_path,
+                    model_name="ArcFace",
+                    detector_backend="retinaface",
+                    enforce_detection=False
+                )
 
-        try:
-            rep = DeepFace.represent(
-                img_path=img_path,
-                model_name="ArcFace",
-                detector_backend="retinaface",
-                enforce_detection=False
-            )
+                embeddings.append(result[0]["embedding"])
+                names.append(person)
 
-            embeddings.append(rep[0]["embedding"])
-            names.append(person)
+            except Exception as e:
+                print(f"Skipped {img_path}: {e}")
 
-            print(f"✅ {img_path}")
+    # 🔥 Compress embeddings
+    embeddings = np.array(embeddings, dtype="float16")
 
-        except Exception as e:
-            print(f"❌ Skipped {img_path}: {e}")
+    dump((embeddings, names), "image_embeddings.joblib", compress=3)
+    print("✅ Embeddings saved as image_embeddings.joblib")
 
-dump(embeddings, "venv/image_embeddings.joblib")
-dump(names, "filenames.joblib")
 
-print("✅ Feature extraction complete!")
+if __name__ == "__main__":
+    extract_embeddings()
+
+

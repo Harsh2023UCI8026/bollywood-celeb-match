@@ -1,70 +1,55 @@
 import streamlit as st
+import numpy as np
 from deepface import DeepFace
 from sklearn.metrics.pairwise import cosine_similarity
-from joblib import load
 from PIL import Image
-import numpy as np
+from joblib import load
 
-# ---------- PAGE CONFIG ----------
+# ---------- CONFIG ----------
 st.set_page_config(
     page_title="Celebrity Look-Alike",
     page_icon="🎭",
     layout="centered"
 )
 
-# ---------- LOAD DATA ----------
-embeddings = load("venv/image_embeddings.joblib")
-names = load("filenames.joblib")
+# ---------- LOAD EMBEDDINGS ----------
+@st.cache_resource
+def load_embeddings():
+    embeddings, names = load("image_embeddings.joblib")
+    return embeddings, names
 
-# ---------- HEADER ----------
-st.markdown(
-    """
-    <h1 style='text-align:center;'> Which Bollywood Celebrity Do You Look Like?</h1>
-    <p style='text-align:center; color:gray;'>Made by harsh jha</p>
-    <hr>
-    """,
-    unsafe_allow_html=True
-)
+embeddings, names = load_embeddings()
 
-# ---------- IMAGE UPLOAD ----------
-uploaded_image = st.file_uploader(
-    "Upload your image (JPG / PNG)",
-    type=["jpg", "jpeg", "png"]
-)
+# ---------- UI ----------
+st.title("🎭 Celebrity Look-Alike Finder")
 
-if uploaded_image:
+uploaded = st.file_uploader("Upload your photo", type=["jpg", "jpeg", "png"])
 
-    col1, col2 = st.columns([1, 1.2])
+if uploaded:
+    image = Image.open(uploaded).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    with col1:
-        image = Image.open(uploaded_image).convert("RGB")
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+    with st.spinner("Analyzing face..."):
+        temp_path = "temp.jpg"
+        image.save(temp_path)
 
-    # Save temporary image
-    temp_path = "temp.jpg"
-    image.save(temp_path)
-
-    with st.spinner(" Analyzing face..."):
-        embedding = DeepFace.represent(
+        result = DeepFace.represent(
             img_path=temp_path,
             model_name="ArcFace",
             detector_backend="retinaface",
             enforce_detection=False
-        )[0]["embedding"]
+        )
 
-        similarities = cosine_similarity([embedding], embeddings)[0]
-        best_index = np.argmax(similarities)
-        confidence = round(similarities[best_index] * 100, 2)
+        query_embedding = result[0]["embedding"]
+        similarities = cosine_similarity([query_embedding], embeddings)[0]
 
-    with col2:
-        st.markdown("###  Result")
-        st.success(f"**This image looks like:** {names[best_index]}")
-        st.metric(label="Similarity Score", value=f"{confidence}%")
+        best_idx = int(np.argmax(similarities))
+        confidence = round(float(similarities[best_idx]) * 100, 2)
 
-    st.progress(min(int(confidence), 100))
+    st.success(f"🎯 Match: **{names[best_idx]}**")
+    st.metric("Confidence", f"{confidence}%")
 
-    st.markdown("---")
-    st.caption("⚡ Powered by DeepFace + Streamlit | Model: ArcFace")
+
 
 
 
